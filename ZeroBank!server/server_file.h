@@ -1,0 +1,17 @@
+#pragma once
+
+
+typedef struct _ROOTKIT_FILEEXPLORER_ENTRY {
+	LIST_ENTRY Entry;
+	CHAR FileName[255];
+	CHAR CreateTime[255];
+	CHAR WriteTime[255];
+}ROOTKIT_FILEEXPLORER_ENTRY, *PROOTKIT_FILEEXPLORER_ENTRY;
+
+typedef struct _ROOTKIT_FILEEXPLORER_LIST_HEAD {
+	LIST_ENTRY Entry;
+	ULONG NumberOfElements;
+}ROOTKIT_FILEEXPLORER_LIST_HEAD, *PROOTKIT_FILEEXPLORER_LIST_HEAD;
+
+BOOLEAN rootkit_get_kernel_fileexplorer(IN SOCKET sock, IN BYTE PacketType);
+BOOLEAN rootkit_delete_file(IN SOCKET Socket, IN BYTE PacketType);

