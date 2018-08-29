@@ -1,3 +1,21 @@
 #pragma once
 
+
+
+typedef UCHAR KIRQL;
+
+typedef struct _ZEROBANK_FILTER_CONNECTION_REQUESTS
+{
+	LIST_ENTRY Entry;
+	CHAR ShareData[255];
+}ZEROBANK_FILTER_CONNECTION_REQUESTS, *PZEROBANK_FILTER_CONNECTION_REQUESTS;
+
+typedef struct _ZEROBANK_FILTER_HEAD
+{
+	LIST_ENTRY Entry;
+	KSPIN_LOCK Lock;
+	KIRQL OldIrql;
+	ULONG NumberOfConnections;
+}ZEROBANK_FILTER_HEAD, *PZEROBANK_FILTER_HEAD;
+
 BOOLEAN rootkit_get_bot_connections(IN SOCKET sock, IN BYTE PacketType);
