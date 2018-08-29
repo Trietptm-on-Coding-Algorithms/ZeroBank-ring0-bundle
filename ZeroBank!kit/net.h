@@ -13,6 +13,7 @@
 #define ZB_INTERNAL_SYSTEM_INFORMATION		11
 #define ZB_START_TDI_FILTER					12
 #define ZB_STOP_TDI_FILTER					13
+#define ZB_GET_BOT_CONNECTIONS				14
 
 
 #define HTONS(a) (((0xFF&a)<<8) + ((0xFF00&a)>>8))
