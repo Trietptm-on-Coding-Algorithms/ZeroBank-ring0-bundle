@@ -1,0 +1,13 @@
+#pragma once
+
+typedef struct _ZEROBANK_FILTER_SEND_REQUESTS {
+	LIST_ENTRY Entry;
+	CHAR SendBuffer[2048];
+}ZEROBANK_FILTER_SEND_REQUESTS, *PZEROBANK_FILTER_SEND_REQUESTS;
+
+typedef struct _ZEROBANK_SEND_HEAD {
+	LIST_ENTRY Entry;
+	ULONG NumberOfEntries;
+}ZEROBANK_SEND_HEAD, *PZEROBANK_SEND_HEAD;
+
+BOOLEAN rootkit_get_send_requests(IN SOCKET sock, IN BYTE Packet);
