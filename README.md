@@ -14,6 +14,7 @@ Thread Explorer <br />
 File Explorer <br />
 File Transfer (Kernel to server) <br />
 TDI connections filter <br />
+TDI send filter <br />
 Encrypted communications (RC4) <br />
 More information about project parts and overview can be found here <br />
 
