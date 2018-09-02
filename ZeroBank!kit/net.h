@@ -14,6 +14,7 @@
 #define ZB_START_TDI_FILTER					12
 #define ZB_STOP_TDI_FILTER					13
 #define ZB_GET_BOT_CONNECTIONS				14
+#define ZB_GET_BOT_SEND_REQUESTS			15
 
 
 #define HTONS(a) (((0xFF&a)<<8) + ((0xFF00&a)>>8))

